@@ -1,0 +1,2 @@
+2022-03-03 20:28:38 [main] WARN  o.s.b.a.j.JacksonAutoConfiguration$JodaDateTimeJacksonConfiguration -
+				Auto-configuration of Jackson's Joda-Time integration is deprecated in favor of using java.time (JSR-310).
