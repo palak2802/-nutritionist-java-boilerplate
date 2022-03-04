@@ -8,9 +8,6 @@ import com.stackroute.userservice.exception.UserNotFoundException;
 import com.stackroute.userservice.model.User;
 import com.stackroute.userservice.repository.UserRepository;
 
-import java.util.Optional;
-
-
    /*
 	* Service classes are used here to implement additional business logic/validation 
 	* This class has to be annotated with @Service annotation.
@@ -30,31 +27,62 @@ public class UserServiceImpl implements UserService {
 		this.userRepo = userRepo;
 	}
 
-	/*
-	 * This method should be used to find an existing User with correct password.
-	 */
-    
-    @Override
-    public User findByUserIdAndPassword(String userId, String password) throws UserNotFoundException {
-    	User user = userRepo.findByUserIdAndPassword(userId, password);
-		if(user != null)
-			return user;
-		return null;
+	public User registerUser(User user) throws UserAlreadyExistsException {
+		Boolean userProfileById = userRepo.existsById(user.getUserId());
+    	if(userProfileById == false) {
+    		User userProfile = userRepo.insert(user);
+    		if(userProfile != null)
+    			return userProfile;
+    	}
+        throw new UserAlreadyExistsException("User Profile with user ID: "+user.getUserId()+ " already exists in DB.");
     }
 
 	/*
-	 * This method should be used to save a new User.
+	 * This method should be used to update a existing userprofile.Call the corresponding
+	 * method of Respository interface.
 	 */
-    
+
     @Override
-    public boolean saveUser(User user) throws UserAlreadyExistsException {
-    	Optional<User> isUserExists = userRepo.findById(user.getUserId());
-    	if(isUserExists.isEmpty()) {
-    		userRepo.save(user);
+    public User updateUser(String userId, User user) throws UserNotFoundException {
+    	User userProfileById = userRepo.findById(userId).get();
+    	if(userProfileById != null) {
+    		userProfileById.setFirstName(user.getFirstName());
+    		userProfileById.setLastName(user.getLastName());
+    		userProfileById.setContact(user.getContact());
+    		userProfileById.setEmail(user.getEmail());
+    		userRepo.save(userProfileById);
+    		User userProfile = userRepo.findById(userId).get();
+    		return userProfile;
+    	}
+        throw new UserNotFoundException("User Profile with user ID: "+userId+ " does not found in DB.");
+    }
+
+	/*
+	 * This method should be used to delete an existing user. Call the corresponding
+	 * method of Respository interface.
+	 */
+
+    @Override
+    public boolean deleteUser(String userId) throws UserNotFoundException {
+    	User userProfileById = userRepo.findById(userId).get();
+    	if(userProfileById != null) {
+    		userRepo.deleteById(userId);
     		return true;
     	}
-    	else{
-    		throw new UserAlreadyExistsException("User Already Exists.");
+        throw new UserNotFoundException("User Profile with user ID: "+userId+ " does not found in DB.");
+    }
+    
+	/*
+	 * This method should be used to get userprofile by userId.Call the corresponding
+	 * method of Respository interface.
+	 */
+
+    @Override
+    public User getUserById(String userId) throws UserNotFoundException {
+    	User userProfileById = userRepo.findById(userId).get();
+    	if(userProfileById != null) {
+    		return userProfileById;
     	}
+        throw new UserNotFoundException("User Profile with user ID: "+userId+ " does not found in DB.");
     }
 }

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class LoggerAspect {
 
 	/*
-	 * Loggers for each of the methods of User Service Controller, any particular method
+	 * Loggers for each of the methods of Favourite Service Controller, any particular method
 	 * will have all the four aspectJ annotation
 	 * (@Before, @After, @AfterReturning, @AfterThrowing).
 	 */

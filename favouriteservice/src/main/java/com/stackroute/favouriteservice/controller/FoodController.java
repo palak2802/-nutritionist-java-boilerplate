@@ -18,8 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.stackroute.favouriteservice.exception.FoodNotFoundException;
 import com.stackroute.favouriteservice.model.FavouriteFood;
-import com.stackroute.favouriteservice.model.Food;
-import com.stackroute.favouriteservice.service.FoodService;
+import com.stackroute.favouriteservice.service.FavFoodService;
 
 /*
  * As in this assignment, we are working with creating RESTful web service, hence annotate
@@ -30,108 +29,84 @@ import com.stackroute.favouriteservice.service.FoodService;
  * is equivalent to using @Controller and @ResposeBody annotation
  */
 @RestController
-@RequestMapping("/api/v1/food")
+@RequestMapping("/api/v1/favfood")
 public class FoodController {
 
-	private FoodService foodService;
+	private FavFoodService favFoodService;
 	
 	@Autowired
-	public FoodController(FoodService foodService) {
-		this.foodService = foodService;
+	public FoodController(FavFoodService favFoodService) {
+		this.favFoodService = favFoodService;
 	}
 	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	@GetMapping
-	public ResponseEntity<FavouriteFood> getfood(){
-		return new ResponseEntity<FavouriteFood>(HttpStatus.ACCEPTED);
-	}
-
 	@PostMapping
 	public ResponseEntity<FavouriteFood> addFavFood(@RequestBody FavouriteFood favFood){
-		Boolean isFavFoodExists = foodService.addFavFoodByfoodName(favFood);
+		Boolean isFavFoodExists = favFoodService.addFavouriteFood(favFood);
 		if(isFavFoodExists == true) {
 			logger.info("In controller - {}", "FavFood added: " +favFood);
 			return new ResponseEntity<FavouriteFood>(favFood, HttpStatus.CREATED);
 		}
-		logger.info("In controller - {}", "User ID "+ favFood.getUserId() + " already exists.");
-		return new ResponseEntity<FavouriteFood>(HttpStatus.CONFLICT);
+		logger.info("In controller - {}", "User ID "+ favFood.getFavFoodCreatedBy() + " not exists.");
+		return new ResponseEntity<FavouriteFood>(HttpStatus.NOT_FOUND);
 	}
 
-	@DeleteMapping("/{userId}/{foodName}")
-	public ResponseEntity<Food> deleteFavFoodByName(@PathVariable("userId") String userId, @PathVariable("foodName") String foodName){
-		Boolean isFoodDeleted = foodService.deleteFavFoodByName(userId, foodName);
+	@DeleteMapping("/{favFoodId}")
+	public ResponseEntity<FavouriteFood> deleteFavouriteFood(@PathVariable("favFoodId") int favFoodId){
+		Boolean isFoodDeleted = favFoodService.deleteFavouriteFood(favFoodId);
 		if(isFoodDeleted == true) {
-			logger.info("In controller - {}", "Food deleted for user ID: "+userId+ " and food name: " +foodName);
-			return new ResponseEntity<Food>(HttpStatus.OK);
+			logger.info("In controller - {}", "Food deleted for food name: " +favFoodId);
+			return new ResponseEntity<FavouriteFood>(HttpStatus.OK);
 		}
-		logger.info("In controller - {}", "Food not found for user ID: "+userId+ " and Food Name: " +foodName);
-		return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
+		logger.info("In controller - {}", "Food not found for Food Name: " +favFoodId);
+		return new ResponseEntity<FavouriteFood>(HttpStatus.NOT_FOUND);
 	}
 	
-	@DeleteMapping("/{userId}")
-	public ResponseEntity<Food> deleteAllFavFood(@PathVariable("userId") String userId){
-		List<Food> allFood;
-		try {
-			allFood = foodService.getAllFavFoodByUserId(userId);
-			if(allFood != null) {
-			foodService.deleteAllFavFood(userId);
-			logger.info("In controller - {}", "All Food deleted for User ID - " +userId);
-			return new ResponseEntity<Food>(HttpStatus.OK);
-			}
-		}
-		catch (FoodNotFoundException e) {
-			logger.info("In controller - {}", "Food not found for User ID - " +userId);
-			return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
-		}
-		logger.info("In controller - {}", "Food not found for User ID - " +userId);
-		return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
-	}
-
-	@PutMapping("/{userId}/{foodName}")
-	public ResponseEntity<Food> updateFavFood(@PathVariable("userId") String userId, @PathVariable("foodName") String foodName, @RequestBody Food food) 
+	@PutMapping("/{favFoodId}")
+	public ResponseEntity<FavouriteFood> updateFavouriteFood(@PathVariable("favFoodId") int favFoodId, @RequestBody FavouriteFood food) 
 		{
 		try {
-				Food foodUpdated = foodService.updateFavFood(food, foodName, userId);
+			FavouriteFood foodUpdated = favFoodService.updateFavouriteFood(food, favFoodId);
 				if(foodUpdated != null) {
-				logger.info("In controller - {}", "Food updated for User ID: "+userId+ " and Food Name: " +foodName + " is: " +food);
-				return new ResponseEntity<Food>(foodUpdated, HttpStatus.OK);
+				logger.info("In controller - {}", "Food updated for Food Name: " +favFoodId + " is: " +food);
+				return new ResponseEntity<FavouriteFood>(foodUpdated, HttpStatus.OK);
 			}
 		} catch (FoodNotFoundException e) {
-			logger.info("In controller - {}", "Food not found for User ID: "+userId+ " and Food Name: " +foodName);
-			return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
+			logger.info("In controller - {}", "Food not found for and Food Name: " +favFoodId);
+			return new ResponseEntity<FavouriteFood>(HttpStatus.NOT_FOUND);
 		}
-		logger.info("In controller - {}", "Food not found for User ID: "+userId+ " and Food Name: " +foodName);
-		return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
+		logger.info("In controller - {}", "Food not found for and Food Name: " +favFoodId);
+		return new ResponseEntity<FavouriteFood>(HttpStatus.NOT_FOUND);
 	}
 
-	@GetMapping("/{userId}/{foodName}")
-	public ResponseEntity<Food> getFavFoodByFoodName(@PathVariable("userId") String userId, @PathVariable("foodName") String foodName){
-		Food foodByName;
+	@GetMapping("/{userId}/{favFoodId}")
+	public ResponseEntity<FavouriteFood> getFavouriteFoodById(@PathVariable("userId") String userId, @PathVariable("favFoodId") int favFoodId){
+		FavouriteFood foodByName;
 		try {
-			foodByName = foodService.getFavFoodByFoodName(userId, foodName);
+			foodByName = favFoodService.getFavouriteFoodById(userId, favFoodId);
 			if(foodByName != null) {
-				logger.info("In controller - {}", "The Food for User ID: "+userId+ " and food Name: " +foodName+ " is: "+foodByName);
-				return new ResponseEntity<Food>(foodByName, HttpStatus.OK);
+				logger.info("In controller - {}", "The Food for User ID: "+userId+ " and food Name: " +favFoodId+ " is: "+foodByName);
+				return new ResponseEntity<FavouriteFood>(foodByName, HttpStatus.OK);
 			}
 		} catch (FoodNotFoundException e) {
-			logger.info("In controller - {}", "Food Name "+foodName+ " not Found.");
-			return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
+			logger.info("In controller - {}", "Food Name "+favFoodId+ " not Found.");
+			return new ResponseEntity<FavouriteFood>(HttpStatus.NOT_FOUND);
 		}
-		logger.info("In controller - {}", "Food Name "+foodName+ " not Found.");
-		return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
+		logger.info("In controller - {}", "Food Name "+favFoodId+ " not Found.");
+		return new ResponseEntity<FavouriteFood>(HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping("/{userId}")
-	public ResponseEntity<List<Food>> getAllNewsByUserId(@PathVariable("userId") String userId){
-		List<Food> allFood = foodService.getAllFavFoodByUserId(userId);
+	public ResponseEntity<List<FavouriteFood>> getAllFavouriteFoodByUserId(@PathVariable("userId") String userId){
+		List<FavouriteFood> allFood = favFoodService.getAllFavouriteFoodByUserId(userId);
 		if(allFood != null) {
 			logger.info("In controller - {}", "List of all news: "+allFood);
-			return new ResponseEntity<List<Food>>(allFood, HttpStatus.OK);
+			return new ResponseEntity<List<FavouriteFood>>(allFood, HttpStatus.OK);
 		}
 		else {
 			logger.info("In controller - {}", "User ID "+userId+ " not Found.");
-			return new ResponseEntity<List<Food>>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<List<FavouriteFood>>(HttpStatus.NOT_FOUND);
 		}
 	}
 

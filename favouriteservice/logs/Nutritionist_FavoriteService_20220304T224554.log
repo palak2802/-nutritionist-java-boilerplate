@@ -1,0 +1,12 @@
+2022-03-04 22:46:07 [main] WARN  o.s.b.a.j.JacksonAutoConfiguration$JodaDateTimeJacksonConfiguration -
+				Auto-configuration of Jackson's Joda-Time integration is deprecated in favor of using java.time (JSR-310).
+2022-03-04 22:46:10 [SpringContextShutdownHook] WARN  d.f.embed.mongo.runtime.Mongod -
+				---------------------------------------
+Your localhost (192.168.1.12) is not a loopback adress
+We can NOT send shutdown to mongod, because it is denied from remote.
+---------------------------------------
+
+2022-03-04 22:46:10 [SpringContextShutdownHook] WARN  d.f.embed.mongo.AbstractMongoProcess -
+				could not stop mongod with db command, try next
+2022-03-04 22:46:10 [SpringContextShutdownHook] WARN  d.f.embed.mongo.AbstractMongoProcess -
+				could not stop mongod, try next
