@@ -1,0 +1,13 @@
+stages:
+  - build
+  - test
+
+maven-build:
+  stage: build
+  script:
+    - "mvn package"
+
+maven-test:
+  stage: test
+  script:
+    - "mvn test"

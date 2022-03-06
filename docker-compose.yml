@@ -1,0 +1,40 @@
+services:
+  authenticationservice:
+    build: .
+    image: docker-auth-service
+    ports:
+      - "8083:8083"
+    networks: 
+      - shared-network
+    links:
+      - mysql:host.docker.internal
+  foodservice:
+    build: .
+    image: docker-food-service
+    ports:
+      - "8081:8081"
+    links:
+      - mongo_db:host.docker.internal
+  userservice:
+    build: .
+    image: docker-user-service
+    ports:
+      - "8080:8080"
+    links:
+      - mongo_db:host.docker.internal
+  mongo_db: 
+    image: "mongodb:latest"
+    ports:
+      - "27017:27017"
+  mysql: 
+    image: "mysql:latest"
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: NutritionistAuthApp
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root123
+      MYSQL_ROOT_PASSWORD: root123
+
+networks:
+  shared-network: {}
