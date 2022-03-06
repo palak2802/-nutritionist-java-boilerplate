@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.stackroute.foodservice.exception.FoodNotFoundException;
+import com.stackroute.foodservice.exception.UserNotFoundException;
 import com.stackroute.foodservice.model.Food;
 import com.stackroute.foodservice.model.Nutrients;
 import com.stackroute.foodservice.model.UserFavFood;
@@ -27,39 +28,27 @@ public class FoodServiceImpl implements FoodService {
 	}
 	
 	@Override
-	public boolean addFood(Food food) {
-		Food ifFoodExists = foodServiceRepo.findFoodByFoodName(food.getFoodName());
-		if(ifFoodExists == null) {
+	public UserFavFood addFavFood(Food food) {
+		Boolean isExistsUserFood = foodServiceRepo.existsById(food.getCreatedBy());
+		if(isExistsUserFood == false) {
+			
 			Food newFood = new Food();
+			List<Food> foodList = new ArrayList<Food>();
 			newFood.setDescription(food.getDescription());
 			newFood.setFoodCategory(food.getFoodCategory());
 			newFood.setFoodName(food.getFoodName());
-			newFood.setNutrients(food.getNutrients());
+			newFood.setNutrients(getNutrition(food));
 			newFood.setCreatedBy(food.getCreatedBy());
-			Food foodSaved = foodServiceRepo.saveFood(newFood);
-			if(foodSaved != null) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public boolean addFavFood(Food food) {
-		Boolean isExistsUserFood = foodServiceRepo.existsById(food.getCreatedBy());
-		if(isExistsUserFood == false) {
-			List<Food> foodList = new ArrayList<Food>();
+			foodList.add(newFood);
+			
 			UserFavFood userFood = new UserFavFood();
-			foodList.add(food);
 			userFood.setUserId(food.getCreatedBy());
 			userFood.setFavFoodList(foodList);
 			UserFavFood userFoodAdded = foodServiceRepo.insert(userFood);
 				if(userFoodAdded != null)
-					return true;
-				else
-					return false;
+					return userFoodAdded;
 			}
-		return false;
+		return null;
 	}
 
 	@Override
@@ -83,7 +72,7 @@ public class FoodServiceImpl implements FoodService {
 		List<Food> foodList  = userFood.getFavFoodList();
 		for(Food foodByName : foodList) {
 			if(foodByName.getFoodName().equalsIgnoreCase(foodName)) {
-				foodServiceRepo.deleteById(foodByName.getFoodName());
+				foodServiceRepo.deleteById(foodByName.getCreatedBy());
 			return true;
 			}
 		}
@@ -91,24 +80,31 @@ public class FoodServiceImpl implements FoodService {
 	}
 
 	@Override
-	public Food updateFavFood(Food food, String foodName, String userId) throws FoodNotFoundException {
+	public UserFavFood updateFavFood(Food food, String foodName, String userId) throws FoodNotFoundException {
+		int index = 0;
 		try {
 			UserFavFood userFood = foodServiceRepo.findById(userId).get();
 			List<Food> foodList  = userFood.getFavFoodList();
 			if(foodList != null) {
 			for(Food foodByName : foodList) {
 				if(foodByName.getFoodName().equalsIgnoreCase(foodName)) {
-					foodByName.setCreatedBy(food.getCreatedBy());
+					if(!foodByName.getFoodName().equalsIgnoreCase(food.getFoodName())) {
+						throw new FoodNotFoundException("Food name cannot be modified.");
+					}
+					else if(!foodByName.getCreatedBy().equalsIgnoreCase(food.getCreatedBy())) {
+						throw new FoodNotFoundException("Food created by user cannot be modified.");
+					}
 					foodByName.setDescription(food.getDescription());
 					foodByName.setFoodCategory(food.getFoodCategory());
-					foodByName.setFoodName(food.getFoodName());
-					foodByName.setNutrients(food.getNutrients());
-					foodList.add(foodByName);
-					userFood.setFavFoodList(foodList);
-					foodServiceRepo.save(userFood);
-					return foodByName;
+					foodByName.setNutrients(getNutrition(food));
+					foodList.set(index, foodByName);
+					index++;
 				}
-			}}}
+			}
+			userFood.setFavFoodList(foodList);
+			foodServiceRepo.save(userFood);
+			return userFood;
+			}}
 			catch(NoSuchElementException ex) {
 				throw new FoodNotFoundException("Can not Update the Food. The food with user ID: "+userId+ " and food Name: "+foodName+" does not exists in the database.");
 			}
@@ -118,11 +114,20 @@ public class FoodServiceImpl implements FoodService {
 	@Override
 	public Nutrients getNutritionByFoodName(String foodName) throws FoodNotFoundException {
 		try {
-			Food food = foodServiceRepo.findFoodByFoodName(foodName);
-			if(food != null) {
-				return food.getNutrients();
-				}
-			}
+			List<UserFavFood> userFoodList = foodServiceRepo.findAll();
+			List<Food> foodList = null;
+			Nutrients nutrients = null;
+			
+			if(userFoodList != null) {
+				for(UserFavFood userFood:userFoodList) {
+					foodList = userFood.getFavFoodList();
+					if(foodList != null) {
+						for(Food food:foodList) {
+							if(food.getFoodName().equalsIgnoreCase(foodName)) {
+								nutrients = getNutrition(food);
+								return nutrients;
+							}}}
+				}}}
 		catch(NoSuchElementException e) {
 				throw new FoodNotFoundException("Can not Retrieve the Food. The Food with Name: "+foodName+ " and food name: "+foodName +" does not exists in the database.");
 			}
@@ -130,34 +135,52 @@ public class FoodServiceImpl implements FoodService {
 	}
 	
 	@Override
-	public List<Food> getFoodsByFoodCategory(String foodName) throws FoodNotFoundException {
-		String foodCategory = null;
-		List<Food> foodByCategoryList;
-		try {
-			Food food = foodServiceRepo.findFoodByFoodName(foodName);
-			if(food != null) {
-				foodCategory = food.getFoodCategory();
-			}
-			
-			List<Food> foodList = foodServiceRepo.findAllFoods();
-			if(foodList != null) {
-			foodByCategoryList = new ArrayList<Food>();
-			for(Food foodByCategory : foodList) {
-				if(foodCategory.equals(foodByCategory.getFoodCategory())) {
-					foodByCategoryList.add(foodByCategory);
-				}
-			}
-			return foodByCategoryList;
-			}}
-		catch(NoSuchElementException e) {
-				throw new FoodNotFoundException("Can not Retrieve the Food. The Food with Name: "+foodName+ " does not exists in the database.");
-			}
-		return null;
+	public List<Food> getFoodsByFoodCategory(String foodCategoryName) throws FoodNotFoundException {
+	List<Food> foodListByCategory = new ArrayList<Food>();
+	List<Food> foodList = null;
+
+	try {
+		List<UserFavFood> userFoodList = foodServiceRepo.findAll();
+		if(userFoodList != null) {
+			for(UserFavFood userFood:userFoodList) {
+				foodList = userFood.getFavFoodList();
+				if(foodList != null) {
+					for(Food food:foodList) {
+						if(food.getFoodCategory().equalsIgnoreCase(foodCategoryName)) {
+								Nutrients nutrients = getNutrition(food);
+								food.setNutrients(nutrients);
+								foodListByCategory.add(food);
+						}}
+			}}}
+		return foodListByCategory;
+		}
+	catch(NoSuchElementException e) {
+			throw new FoodNotFoundException("Can not Retrieve the Food. The Food with Name: "+foodCategoryName+ " does not exists in the database.");
+		}
 	}
 
 	@Override
 	public List<Food> getAllFavFoodByUserId(String userId) {
-		return foodServiceRepo.findById(userId).get().getFavFoodList();
+		UserFavFood favFood = foodServiceRepo.findById(userId).get();
+		if(favFood != null) {
+			return favFood.getFavFoodList();
+		}
+		return null;
+	}
+	
+	@Override
+	public List<UserFavFood> getAllFavFood(){
+		return foodServiceRepo.findAll();
+	}
+	
+	private Nutrients getNutrition(Food food) {
+		Nutrients nutrition = new Nutrients();
+		nutrition.setTotalCalories(food.getNutrients().getTotalCalories());
+		nutrition.setTotalCarbohydrates(food.getNutrients().getTotalCarbohydrates());
+		nutrition.setTotalFat(food.getNutrients().getTotalFat());
+		nutrition.setTotalProtein(food.getNutrients().getTotalProtein());
+		nutrition.setPerServing(food.getNutrients().getPerServing());
+		return nutrition;
 	}
 
 }

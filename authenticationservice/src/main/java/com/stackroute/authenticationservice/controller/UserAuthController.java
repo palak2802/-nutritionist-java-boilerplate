@@ -41,7 +41,7 @@ public class UserAuthController {
 	 * autowiring) Please note that we should not create an object using the new
 	 * keyword
 	 */
-	static final long EXPIRATIONTIME = 300000;
+	static final long EXPIRATIONTIME = 1000000;
 	private Map<String, String> map = new HashMap<>();
 	@Autowired
 	private UserAuthService authService;

@@ -47,7 +47,7 @@ public class UserController {
 		return new ResponseEntity<User>(HttpStatus.CONFLICT);
 	}
 
-	@PutMapping("/user/{userid}")
+	@PutMapping("/user/{userId}")
 	public ResponseEntity<User> updateUser(@PathVariable("userId") String userId, @RequestBody User userProfile){
 		try {
 			User updatedProfile = userService.updateUser(userId, userProfile);
@@ -62,7 +62,7 @@ public class UserController {
 		return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
 	}
 
-	@DeleteMapping("/user/{userid}")
+	@DeleteMapping("/user/{userId}")
 	public ResponseEntity<User> deleteUser(@PathVariable("userId") String userId){
 		try {
 			boolean isUserDeleted = userService.deleteUser(userId);
@@ -77,7 +77,7 @@ public class UserController {
 		return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
 	}
 
-	@GetMapping("/user/{userid}")
+	@GetMapping("/user/{userId}")
 	public ResponseEntity<User> getUser(@PathVariable("userId") String userId){
 		try {
 			User userProfileById = userService.getUserById(userId);

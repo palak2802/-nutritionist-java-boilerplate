@@ -1,7 +1,6 @@
 package com.stackroute.foodservice.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,10 +12,11 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 public class Nutrients {
 	
 	@Id
-	private List<NutrientComponent> nutrientComponents;	//Carbs, vitamins, minerals, protein, fat, iron, calcium, calories
-	private String description;
+	private String totalProtein;
+	private String totalCarbohydrates;
+	private String totalFat;
+	private String totalCalories;
 	private String perServing;
-	private String unit;
 	@JsonSerialize(using = ToStringSerializer.class)
 	private LocalDateTime publishedAt;
 	
@@ -24,30 +24,46 @@ public class Nutrients {
 		this.publishedAt = LocalDateTime.now();
 	}
 
-	public Nutrients(List<NutrientComponent> nutrientComponents, String description, String perServing, String unit,
-			LocalDateTime publishedAt) {
+	public Nutrients(String totalProtein, String totalCarbohydrates, String totalFat, String totalCalories, 
+			String perServing, LocalDateTime publishedAt) {
 		super();
-		this.nutrientComponents = nutrientComponents;
-		this.description = description;
+		this.totalProtein = totalProtein;
+		this.totalCarbohydrates = totalCarbohydrates;
+		this.totalFat = totalFat;
+		this.totalCalories = totalCalories;
 		this.perServing = perServing;
-		this.unit = unit;
-		this.publishedAt = publishedAt;
 	}
 
-	public List<NutrientComponent> getNutrientComponentList() {
-		return nutrientComponents;
+	public String getTotalProtein() {
+		return totalProtein;
 	}
 
-	public void setNutrientComponentList(List<NutrientComponent> nutrientComponents) {
-		this.nutrientComponents = nutrientComponents;
+	public void setTotalProtein(String totalProtein) {
+		this.totalProtein = totalProtein;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getTotalCarbohydrates() {
+		return totalCarbohydrates;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
+	public void setTotalCarbohydrates(String totalCarbohydrates) {
+		this.totalCarbohydrates = totalCarbohydrates;
+	}
+
+	public String getTotalFat() {
+		return totalFat;
+	}
+
+	public void setTotalFat(String totalFat) {
+		this.totalFat = totalFat;
+	}
+
+	public String getTotalCalories() {
+		return totalCalories;
+	}
+
+	public void setTotalCalories(String totalCalories) {
+		this.totalCalories = totalCalories;
 	}
 
 	public String getPerServing() {
@@ -56,14 +72,6 @@ public class Nutrients {
 
 	public void setPerServing(String perServing) {
 		this.perServing = perServing;
-	}
-
-	public String getUnit() {
-		return unit;
-	}
-
-	public void setUnit(String unit) {
-		this.unit = unit;
 	}
 
 	public LocalDateTime getPublishedAt() {
@@ -76,8 +84,9 @@ public class Nutrients {
 
 	@Override
 	public String toString() {
-		return "Nutrients [nutrientComponents=" + nutrientComponents + ", description=" + description + ", perServing="
-				+ perServing + ", unit=" + unit + ", publishedAt=" + publishedAt + "]";
+		return "Nutrients [totalProtein=" + totalProtein + ", totalCarbohydrates=" + totalCarbohydrates + ", totalFat="
+				+ totalFat + ", totalCalories=" + totalCalories + ", perServing="
+				+ perServing + ", publishedAt=" + publishedAt + "]";
 	}
-	
+
 }
