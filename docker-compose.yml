@@ -1,38 +1,48 @@
 services:
   authenticationservice:
-    build: .
+    build: ./authenticationservice
     image: docker-auth-service
     ports:
       - "8083:8083"
     networks: 
       - shared-network
-    links:
-      - mysql:host.docker.internal
-  foodservice:
-    build: .
-    image: docker-food-service
+    depends_on:
+      - mysqldb
+    environment:
+      SPRING_APPLICATION_JSON: '{
+              "spring.datasource.url" : "jdbc:mysql://mysql-db:3306/NutritionistAuthApp?verifyServerCertificate=false&allowPublicKeyRetrieval=true&useSSL=false&requireSSL=false&createDatabaseIfNotExist=true",              
+              "spring.datasource.username" : "root",
+              "spring.datasource.password" : "root123",
+              "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.MySQL8Dialect",
+              "spring.jpa.hibernate.ddl-auto" : "update"
+            }'
+  favouriteservice:
+    build: ./favouriteservice
+    image: docker-fav-service
     ports:
       - "8081:8081"
-    links:
-      - mongo_db:host.docker.internal
+    depends_on:
+      - mongo
   userservice:
-    build: .
+    build: ./userservice
     image: docker-user-service
     ports:
       - "8080:8080"
-    links:
-      - mongo_db:host.docker.internal
-  mongo_db: 
-    image: "mongodb:latest"
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo
     ports:
       - "27017:27017"
-  mysql: 
-    image: "mysql:latest"
+  mysqldb:
+    image: mysql
+    container_name: mysql-db
+    networks: 
+      - shared-network
     ports:
       - "3306:3306"
     environment:
       MYSQL_DATABASE: NutritionistAuthApp
-      MYSQL_USER: root
       MYSQL_PASSWORD: root123
       MYSQL_ROOT_PASSWORD: root123
 

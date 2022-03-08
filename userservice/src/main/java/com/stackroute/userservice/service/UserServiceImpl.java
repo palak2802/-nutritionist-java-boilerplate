@@ -1,5 +1,7 @@
 package com.stackroute.userservice.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,9 +81,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(String userId) throws UserNotFoundException {
-    	User userProfileById = userRepo.findById(userId).get();
-    	if(userProfileById != null) {
-    		return userProfileById;
+    	Optional<User> userProfileById = userRepo.findById(userId);
+    	if(!userProfileById.isEmpty()) {
+    		return userProfileById.get();
     	}
         throw new UserNotFoundException("User Profile with user ID: "+userId+ " does not found in DB.");
     }

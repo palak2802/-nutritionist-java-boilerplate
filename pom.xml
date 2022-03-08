@@ -96,7 +96,7 @@
 	<modules>
 		<module>userservice</module>
 		<module>authenticationservice</module>
-		<module>foodservice</module>
+		<module>favouriteservice</module>
 	</modules>
 
 	<build>

@@ -77,7 +77,7 @@ public class UserController {
 		return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
 	}
 
-	@GetMapping("/user/{userId}")
+	@GetMapping("/{userId}")
 	public ResponseEntity<User> getUser(@PathVariable("userId") String userId){
 		try {
 			User userProfileById = userService.getUserById(userId);
